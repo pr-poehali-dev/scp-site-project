@@ -237,6 +237,10 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [creatorPassword, setCreatorPassword] = useState('');
   const [isCreatorAuthenticated, setIsCreatorAuthenticated] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [recoveryAnswer, setRecoveryAnswer] = useState('');
+  const [recoveryAttempts, setRecoveryAttempts] = useState(0);
+  const [showArchive, setShowArchive] = useState(false);
 
   const filteredSCPDatabase = scpDatabase.filter((scp) => {
     const query = searchQuery.toLowerCase();
@@ -251,9 +255,31 @@ const Index = () => {
   const handleCreatorLogin = () => {
     if (creatorPassword === '5578') {
       setIsCreatorAuthenticated(true);
+      setRecoveryAttempts(0);
     } else {
       alert('ОШИБКА: Неверный пароль доступа');
       setCreatorPassword('');
+    }
+  };
+
+  const handleRecovery = () => {
+    const correctAnswer = 'yyyy';
+    if (recoveryAnswer.toLowerCase().trim() === correctAnswer) {
+      setShowArchive(true);
+      setShowForgotPassword(false);
+      setRecoveryAnswer('');
+      setRecoveryAttempts(0);
+    } else {
+      setRecoveryAttempts(prev => prev + 1);
+      if (recoveryAttempts >= 2) {
+        alert('ДОСТУП ЗАБЛОКИРОВАН: Превышено количество попыток');
+        setShowForgotPassword(false);
+        setRecoveryAttempts(0);
+        setRecoveryAnswer('');
+      } else {
+        alert(`ОШИБКА: Неверный ответ. Попыток осталось: ${3 - recoveryAttempts - 1}`);
+        setRecoveryAnswer('');
+      }
     }
   };
 
@@ -655,30 +681,138 @@ const Index = () => {
                       Введите код доступа для продолжения.
                     </p>
                     
-                    <div className="space-y-4">
-                      <input
-                        type="password"
-                        placeholder="КОД ДОСТУПА"
-                        value={creatorPassword}
-                        onChange={(e) => setCreatorPassword(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleCreatorLogin()}
-                        className="w-full px-4 py-3 bg-black border-2 border-red-700 text-red-500 text-center text-lg font-mono tracking-widest focus:border-red-500 focus:outline-none placeholder-red-900"
-                      />
-                      
-                      <button
-                        onClick={handleCreatorLogin}
-                        className="w-full px-6 py-3 bg-red-900 border-2 border-red-700 text-red-200 font-bold hover:bg-red-800 transition-colors"
-                      >
-                        <div className="flex items-center justify-center gap-2">
-                          <Icon name="Unlock" size={18} />
-                          АВТОРИЗОВАТЬСЯ
+                    {!showForgotPassword && !showArchive ? (
+                      <>
+                        <div className="space-y-4">
+                          <input
+                            type="password"
+                            placeholder="КОД ДОСТУПА"
+                            value={creatorPassword}
+                            onChange={(e) => setCreatorPassword(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && handleCreatorLogin()}
+                            className="w-full px-4 py-3 bg-black border-2 border-red-700 text-red-500 text-center text-lg font-mono tracking-widest focus:border-red-500 focus:outline-none placeholder-red-900"
+                          />
+                          
+                          <button
+                            onClick={handleCreatorLogin}
+                            className="w-full px-6 py-3 bg-red-900 border-2 border-red-700 text-red-200 font-bold hover:bg-red-800 transition-colors"
+                          >
+                            <div className="flex items-center justify-center gap-2">
+                              <Icon name="Unlock" size={18} />
+                              АВТОРИЗОВАТЬСЯ
+                            </div>
+                          </button>
+
+                          <button
+                            onClick={() => setShowForgotPassword(true)}
+                            className="w-full px-4 py-2 border-2 border-red-900 text-red-400 text-sm hover:border-red-700 transition-colors"
+                          >
+                            <div className="flex items-center justify-center gap-2">
+                              <Icon name="KeyRound" size={16} />
+                              Забыл пароль
+                            </div>
+                          </button>
                         </div>
-                      </button>
-                    </div>
-                    
-                    <div className="mt-6 text-xs text-red-700">
-                      ПРЕДУПРЕЖДЕНИЕ: Несанкционированные попытки доступа отслеживаются
-                    </div>
+                        
+                        <div className="mt-6 text-xs text-red-700">
+                          ПРЕДУПРЕЖДЕНИЕ: Несанкционированные попытки доступа отслеживаются
+                        </div>
+                      </>
+                    ) : showForgotPassword ? (
+                      <div className="space-y-4">
+                        <h4 className="text-lg font-bold text-red-400 mb-4">ВОССТАНОВЛЕНИЕ ДОСТУПА</h4>
+                        <p className="text-sm text-red-300 mb-4">
+                          Попыток осталось: {3 - recoveryAttempts}
+                        </p>
+                        <p className="text-sm text-red-200 mb-4">
+                          Вопрос безопасности: Какой ваш любимый SCP?
+                          <br />
+                          <span className="text-xs text-red-400">(введите ID объекта, например: XXXX или YYYY)</span>
+                        </p>
+                        
+                        <input
+                          type="text"
+                          placeholder="ВВЕДИТЕ ID ОБЪЕКТА"
+                          value={recoveryAnswer}
+                          onChange={(e) => setRecoveryAnswer(e.target.value)}
+                          onKeyPress={(e) => e.key === 'Enter' && handleRecovery()}
+                          className="w-full px-4 py-3 bg-black border-2 border-red-700 text-red-500 text-center text-lg font-mono tracking-widest focus:border-red-500 focus:outline-none placeholder-red-900"
+                        />
+                        
+                        <button
+                          onClick={handleRecovery}
+                          className="w-full px-6 py-3 bg-red-900 border-2 border-red-700 text-red-200 font-bold hover:bg-red-800 transition-colors"
+                        >
+                          <div className="flex items-center justify-center gap-2">
+                            <Icon name="Check" size={18} />
+                            ПОДТВЕРДИТЬ
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setShowForgotPassword(false);
+                            setRecoveryAnswer('');
+                            setRecoveryAttempts(0);
+                          }}
+                          className="w-full px-4 py-2 border-2 border-red-900 text-red-400 text-sm hover:border-red-700 transition-colors"
+                        >
+                          Отмена
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="border-4 border-red-700 bg-black p-6 text-center">
+                          <div className="text-2xl font-bold text-red-500 mb-4">
+                            АРХИВ ПЕРСОНАЛА
+                          </div>
+                          <div className="text-xs text-red-400 mb-4">НЕ ПИШИ АРХИВ</div>
+                        </div>
+
+                        <div className="space-y-4 text-sm text-red-200">
+                          <div className="border-2 border-red-700 bg-red-950/50 p-4">
+                            <div className="font-bold text-red-400 mb-2">1. Скопенко Артем Александрович</div>
+                            <div className="text-red-300 text-xs">
+                              <p>Возраст: 10 лет</p>
+                              <p>Работает с: 2025 года</p>
+                              <p className="mt-2 text-red-500">ПРИМЕЧАНИЕ: Это не оригинальные данные</p>
+                            </div>
+                          </div>
+
+                          <div className="border-2 border-red-700 bg-red-950/50 p-4">
+                            <div className="font-bold text-red-400 mb-2">2. Алексеев Андрей Евгеньевич</div>
+                            <div className="text-red-300 text-xs">
+                              <p>Дата начала: 1.10</p>
+                              <p>Дата регистрации: 16.07.2025</p>
+                              <p className="mt-2 text-red-500">ПРИМЕЧАНИЕ: Это не оригинальные данные</p>
+                            </div>
+                          </div>
+
+                          <div className="border-2 border-red-700 bg-red-950/50 p-4">
+                            <div className="font-bold text-red-400 mb-2">3. Соколов Артем Сергеевич</div>
+                            <div className="text-red-300 text-xs">
+                              <p>Должность: САМЫЙ ГЛАВНЫЙ ДО СОЗДАТЕЛЯ</p>
+                              <p>Работает с: 2023 года</p>
+                              <p className="mt-2 text-red-500">ПРИМЕЧАНИЕ: Это не оригинальные данные</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            setShowArchive(false);
+                            setRecoveryAnswer('');
+                            setRecoveryAttempts(0);
+                          }}
+                          className="w-full px-6 py-3 bg-red-950 border-2 border-red-700 text-red-400 font-bold hover:bg-red-900 transition-colors"
+                        >
+                          <div className="flex items-center justify-center gap-2">
+                            <Icon name="ArrowLeft" size={18} />
+                            НАЗАД
+                          </div>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (
