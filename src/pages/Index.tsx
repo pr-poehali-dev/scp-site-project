@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -231,6 +231,16 @@ const getClassColor = (className: string) => {
   }
 };
 
+interface Application {
+  id: number;
+  full_name: string;
+  age: number;
+  email: string;
+  message: string;
+  status: string;
+  created_at: string;
+}
+
 const Index = () => {
   const [selectedSCP, setSelectedSCP] = useState<SCPObject | null>(scpDatabase[0]);
   const [activeTab, setActiveTab] = useState<'database' | 'personnel' | 'creator'>('database');
@@ -241,6 +251,14 @@ const Index = () => {
   const [recoveryAnswer, setRecoveryAnswer] = useState('');
   const [recoveryAttempts, setRecoveryAttempts] = useState(0);
   const [showArchive, setShowArchive] = useState(false);
+  const [showApplicationForm, setShowApplicationForm] = useState(false);
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [applicationForm, setApplicationForm] = useState({
+    full_name: '',
+    age: '',
+    email: '',
+    message: ''
+  });
 
   const filteredSCPDatabase = scpDatabase.filter((scp) => {
     const query = searchQuery.toLowerCase();
@@ -251,6 +269,12 @@ const Index = () => {
       scp.description.toLowerCase().includes(query)
     );
   });
+
+  useEffect(() => {
+    if (isCreatorAuthenticated) {
+      loadApplications();
+    }
+  }, [isCreatorAuthenticated]);
 
   const handleCreatorLogin = () => {
     if (creatorPassword === '5578') {
@@ -283,6 +307,57 @@ const Index = () => {
     }
   };
 
+  const loadApplications = async () => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/921b7740-88ac-47cd-9ee4-772236e3de28');
+      const data = await response.json();
+      setApplications(data.applications || []);
+    } catch (error) {
+      console.error('Ошибка загрузки заявок:', error);
+    }
+  };
+
+  const submitApplication = async () => {
+    if (!applicationForm.full_name || !applicationForm.age) {
+      alert('Заполните обязательные поля');
+      return;
+    }
+
+    try {
+      const response = await fetch('https://functions.poehali.dev/921b7740-88ac-47cd-9ee4-772236e3de28', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'submit',
+          ...applicationForm,
+          age: parseInt(applicationForm.age)
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        alert('Заявка успешно отправлена! Ожидайте рассмотрения.');
+        setShowApplicationForm(false);
+        setApplicationForm({ full_name: '', age: '', email: '', message: '' });
+      }
+    } catch (error) {
+      alert('Ошибка отправки заявки');
+    }
+  };
+
+  const updateApplicationStatus = async (id: number, status: string) => {
+    try {
+      await fetch('https://functions.poehali.dev/921b7740-88ac-47cd-9ee4-772236e3de28', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update_status', id, status })
+      });
+      loadApplications();
+    } catch (error) {
+      alert('Ошибка обновления статуса');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
@@ -301,6 +376,18 @@ const Index = () => {
             УРОВЕНЬ ДОПУСКА: 4 | ПРЕДУПРЕЖДЕНИЕ: НЕСАНКЦИОНИРОВАННЫЙ ДОСТУП КАРАЕТСЯ
           </div>
         </header>
+
+        <div className="flex justify-center mb-4">
+          <button
+            onClick={() => setShowApplicationForm(true)}
+            className="px-8 py-3 bg-destructive border-2 border-destructive text-white font-bold hover:bg-destructive/80 transition-colors animate-pulse"
+          >
+            <div className="flex items-center gap-2">
+              <Icon name="FileText" size={20} />
+              ПОДАТЬ ЗАЯВКУ НА ВСТУПЛЕНИЕ
+            </div>
+          </button>
+        </div>
 
         <div className="flex gap-4 mb-6">
           <button
@@ -866,6 +953,81 @@ const Index = () => {
                     </div>
                   </section>
 
+                  <section className="border-2 border-red-700 bg-red-950/30 p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-bold flex items-center gap-2 text-red-500">
+                        <Icon name="Inbox" size={20} />
+                        ЗАЯВКИ НА ВСТУПЛЕНИЕ
+                      </h3>
+                      <button
+                        onClick={loadApplications}
+                        className="px-4 py-2 bg-red-900 border-2 border-red-700 text-red-200 text-sm font-bold hover:bg-red-800 transition-colors"
+                      >
+                        <Icon name="RefreshCw" size={16} className="inline mr-2" />
+                        Обновить
+                      </button>
+                    </div>
+                    
+                    {applications.length === 0 ? (
+                      <div className="text-center py-8 text-red-400">
+                        <Icon name="Inbox" size={48} className="mx-auto mb-2 opacity-50" />
+                        <p>Нет новых заявок</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {applications.map((app) => (
+                          <div key={app.id} className="border-2 border-red-700 bg-red-950/50 p-4">
+                            <div className="flex justify-between items-start mb-3">
+                              <div>
+                                <div className="font-bold text-red-400">{app.full_name}</div>
+                                <div className="text-xs text-red-300">
+                                  Возраст: {app.age} | Email: {app.email || 'не указан'}
+                                </div>
+                                <div className="text-xs text-red-500 mt-1">
+                                  Дата: {new Date(app.created_at).toLocaleString('ru')}
+                                </div>
+                              </div>
+                              <div className={`px-3 py-1 text-xs font-bold border-2 ${
+                                app.status === 'approved' ? 'border-green-700 text-green-500' :
+                                app.status === 'rejected' ? 'border-red-900 text-red-700' :
+                                'border-yellow-700 text-yellow-500'
+                              }`}>
+                                {app.status === 'approved' ? 'ПРИНЯТО' :
+                                 app.status === 'rejected' ? 'ОТКЛОНЕНО' :
+                                 'ОЖИДАЕТ'}
+                              </div>
+                            </div>
+                            
+                            {app.message && (
+                              <div className="text-sm text-red-200 mb-3 border-l-2 border-red-700 pl-3">
+                                {app.message}
+                              </div>
+                            )}
+                            
+                            {app.status === 'pending' && (
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => updateApplicationStatus(app.id, 'approved')}
+                                  className="flex-1 px-3 py-2 bg-green-900 border-2 border-green-700 text-green-200 text-sm font-bold hover:bg-green-800 transition-colors"
+                                >
+                                  <Icon name="Check" size={16} className="inline mr-1" />
+                                  Принять
+                                </button>
+                                <button
+                                  onClick={() => updateApplicationStatus(app.id, 'rejected')}
+                                  className="flex-1 px-3 py-2 bg-red-950 border-2 border-red-900 text-red-400 text-sm font-bold hover:bg-red-900 transition-colors"
+                                >
+                                  <Icon name="X" size={16} className="inline mr-1" />
+                                  Отклонить
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </section>
+
                   <div className="text-center">
                     <button
                       onClick={() => {
@@ -884,6 +1046,88 @@ const Index = () => {
               )}
             </CardContent>
           </Card>
+        )}
+
+        {showApplicationForm && (
+          <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50 animate-fade-in">
+            <Card className="border-4 border-destructive max-w-lg w-full">
+              <CardHeader className="border-b-2 border-destructive bg-destructive/10">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-destructive">ЗАЯВКА НА ВСТУПЛЕНИЕ В ФОНД</h2>
+                  <button onClick={() => setShowApplicationForm(false)}>
+                    <Icon name="X" size={24} className="text-destructive" />
+                  </button>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="mt-6 space-y-4">
+                <div>
+                  <label className="text-sm font-bold mb-2 block">ФИО *</label>
+                  <input
+                    type="text"
+                    placeholder="Иванов Иван Иванович"
+                    value={applicationForm.full_name}
+                    onChange={(e) => setApplicationForm({...applicationForm, full_name: e.target.value})}
+                    className="w-full px-4 py-2 bg-background border-2 border-border focus:border-destructive focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-bold mb-2 block">Возраст *</label>
+                  <input
+                    type="number"
+                    placeholder="18"
+                    value={applicationForm.age}
+                    onChange={(e) => setApplicationForm({...applicationForm, age: e.target.value})}
+                    className="w-full px-4 py-2 bg-background border-2 border-border focus:border-destructive focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-bold mb-2 block">Email</label>
+                  <input
+                    type="email"
+                    placeholder="example@mail.com"
+                    value={applicationForm.email}
+                    onChange={(e) => setApplicationForm({...applicationForm, email: e.target.value})}
+                    className="w-full px-4 py-2 bg-background border-2 border-border focus:border-destructive focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-bold mb-2 block">Сообщение</label>
+                  <textarea
+                    placeholder="Почему вы хотите присоединиться к Фонду?"
+                    value={applicationForm.message}
+                    onChange={(e) => setApplicationForm({...applicationForm, message: e.target.value})}
+                    rows={4}
+                    className="w-full px-4 py-2 bg-background border-2 border-border focus:border-destructive focus:outline-none"
+                  />
+                </div>
+
+                <div className="border-2 border-destructive bg-destructive/5 p-4 text-xs">
+                  <p className="font-bold mb-2">ВНИМАНИЕ:</p>
+                  <p>Подавая заявку, вы подтверждаете готовность служить интересам Фонда SCP и соблюдать все протоколы безопасности.</p>
+                </div>
+
+                <div className="flex gap-4">
+                  <button
+                    onClick={submitApplication}
+                    className="flex-1 px-6 py-3 bg-destructive border-2 border-destructive text-white font-bold hover:bg-destructive/80 transition-colors"
+                  >
+                    <Icon name="Send" size={18} className="inline mr-2" />
+                    ОТПРАВИТЬ ЗАЯВКУ
+                  </button>
+                  <button
+                    onClick={() => setShowApplicationForm(false)}
+                    className="px-6 py-3 border-2 border-border text-foreground font-bold hover:border-destructive transition-colors"
+                  >
+                    ОТМЕНА
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         )}
 
         <footer className="mt-8 text-center text-xs text-muted-foreground border-t-2 border-border pt-4">

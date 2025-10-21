@@ -1,0 +1,32 @@
+{
+  "tests": [
+    {
+      "name": "Submit application",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "submit",
+        "full_name": "Тестовый Пользователь",
+        "age": 25,
+        "email": "test@example.com",
+        "message": "Хочу присоединиться к Фонду"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "id": "number"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get all applications",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "applications": "array"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
