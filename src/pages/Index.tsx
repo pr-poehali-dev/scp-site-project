@@ -201,6 +201,7 @@ const getClassColor = (className: string) => {
 
 const Index = () => {
   const [selectedSCP, setSelectedSCP] = useState<SCPObject | null>(scpDatabase[0]);
+  const [activeTab, setActiveTab] = useState<'database' | 'personnel'>('database');
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
@@ -221,6 +222,37 @@ const Index = () => {
           </div>
         </header>
 
+        <div className="flex gap-4 mb-6">
+          <button
+            onClick={() => setActiveTab('database')}
+            className={`px-6 py-3 border-2 font-bold text-sm transition-all ${
+              activeTab === 'database'
+                ? 'border-destructive bg-destructive/10 text-destructive'
+                : 'border-border hover:border-destructive'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Icon name="Database" size={18} />
+              БАЗА ДАННЫХ
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('personnel')}
+            className={`px-6 py-3 border-2 font-bold text-sm transition-all ${
+              activeTab === 'personnel'
+                ? 'border-destructive bg-destructive/10 text-destructive'
+                : 'border-border hover:border-destructive'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Icon name="UserCheck" size={18} />
+              ТОЛЬКО ДЛЯ ПЕРСОНАЛА
+            </div>
+          </button>
+        </div>
+
+        {activeTab === 'database' && (
+        <>
         <div className="grid md:grid-cols-3 gap-6 mb-6">
           <Card className="border-2 border-border hover:border-destructive transition-colors cursor-pointer animate-fade-in">
             <CardHeader>
@@ -389,6 +421,123 @@ const Index = () => {
             )}
           </div>
         </div>
+        </>
+        )}
+
+        {activeTab === 'personnel' && (
+          <Card className="border-2 border-destructive animate-fade-in">
+            <CardHeader className="border-b-2 border-destructive bg-destructive/10">
+              <div className="text-center">
+                <div className="text-2xl font-bold mb-2 text-destructive">
+                  ⚠ ТОЛЬКО ДЛЯ ПЕРСОНАЛА ⚠
+                </div>
+                <div className="text-xs">УРОВЕНЬ ДОПУСКА 3 И ВЫШЕ</div>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="mt-6 space-y-8">
+              <section>
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2 border-b-2 border-destructive pb-2">
+                  <Icon name="MessageSquare" size={18} />
+                  I. Стандартные фразы при взаимодействии с SCP-объектами
+                </h3>
+                <p className="text-xs text-muted-foreground mb-3">Особенно класса Евклид/Кетер</p>
+                <ul className="space-y-2 text-sm">
+                  <li className="pl-4 border-l-2 border-muted">"Пожалуйста, не двигайтесь. Мы здесь, чтобы обеспечить вашу безопасность."</li>
+                  <li className="pl-4 border-l-2 border-muted">"Сопротивление бессмысленно. Смиритесь и сотрудничайте, это в ваших же интересах."</li>
+                  <li className="pl-4 border-l-2 border-muted">"Мы соблюдаем все протоколы. Вам не будет причинен вред, если вы будете следовать нашим инструкциям."</li>
+                  <li className="pl-4 border-l-2 border-muted">"Ответьте на вопросы. Ваша информация поможет нам понять вашу природу."</li>
+                  <li className="pl-4 border-l-2 border-muted">"Обратите внимание: любые враждебные действия приведут к применению ответных мер."</li>
+                  <li className="pl-4 border-l-2 border-destructive">(При необходимости): "Мы действуем в соответствии с Директивой [УКАЗАТЬ НОМЕР ДИРЕКТИВЫ]".</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2 border-b-2 border-destructive pb-2">
+                  <Icon name="Shield" size={18} />
+                  II. Фразы для сотрудников службы безопасности
+                </h3>
+                <ul className="space-y-2 text-sm">
+                  <li className="pl-4 border-l-2 border-muted">"Сохраняйте периметр. Никому не позволено приближаться."</li>
+                  <li className="pl-4 border-l-2 border-muted">"Код [УКАЗАТЬ КОД]. Повторяю, код [УКАЗАТЬ КОД]. Всем постам усилить бдительность."</li>
+                  <li className="pl-4 border-l-2 border-muted">"Доложите о любой подозрительной активности."</li>
+                  <li className="pl-4 border-l-2 border-muted">"Применить нелетальные средства. Не допускать кровопролития, если это возможно."</li>
+                  <li className="pl-4 border-l-2 border-muted">"Вывести гражданских из зоны поражения."</li>
+                  <li className="pl-4 border-l-2 border-destructive">"Нарушение условий содержания! Всем сотрудникам занять боевые позиции!"</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2 border-b-2 border-destructive pb-2">
+                  <Icon name="FlaskConical" size={18} />
+                  III. Фразы для научных сотрудников
+                </h3>
+                <ul className="space-y-2 text-sm">
+                  <li className="pl-4 border-l-2 border-muted">"Запишите все наблюдения. Даже незначительные детали могут быть важны."</li>
+                  <li className="pl-4 border-l-2 border-muted">"Проанализируйте данные и предоставьте отчет в кратчайшие сроки."</li>
+                  <li className="pl-4 border-l-2 border-muted">"Соблюдайте осторожность. Это не обычное явление - любая ошибка может быть фатальной."</li>
+                  <li className="pl-4 border-l-2 border-muted">"Не вступайте в прямой контакт с объектом без разрешения."</li>
+                  <li className="pl-4 border-l-2 border-muted">"Отошлите результаты исследования на рассмотрение, уровень допуска [УКАЗАТЬ УРОВЕНЬ]."</li>
+                  <li className="pl-4 border-l-2 border-muted">"Предложите альтернативные методы содержания, если существующие неэффективны."</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2 border-b-2 border-destructive pb-2">
+                  <Icon name="Users" size={18} />
+                  IV. Фразы для персонала класса D
+                </h3>
+                <ul className="space-y-2 text-sm">
+                  <li className="pl-4 border-l-2 border-muted">"Вы должны следовать инструкциям. От этого зависит продолжительность вашей жизни."</li>
+                  <li className="pl-4 border-l-2 border-muted">"Сообщите о любых изменениях в своем состоянии."</li>
+                  <li className="pl-4 border-l-2 border-muted">"Вопросы будут заданы позже. Сейчас ваша задача - выполнять указания."</li>
+                  <li className="pl-4 border-l-2 border-destructive">(Чаще всего сказано без особой вежливости): "Шевелись!"</li>
+                  <li className="pl-4 border-l-2 border-destructive">(Перед выполнением опасного задания): "Помните, что ваша жизнь не имеет значения. Вы здесь только для того, чтобы помочь нам получить информацию."</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2 border-b-2 border-destructive pb-2">
+                  <Icon name="FileWarning" size={18} />
+                  V. Общие фразы, используемые в Фонде
+                </h3>
+                <ul className="space-y-2 text-sm">
+                  <li className="pl-4 border-l-2 border-muted">"Уровень допуска недостаточен для просмотра данной информации."</li>
+                  <li className="pl-4 border-l-2 border-muted">"Информация засекречена в целях безопасности."</li>
+                  <li className="pl-4 border-l-2 border-muted">"Это необходимо для всеобщего блага."</li>
+                  <li className="pl-4 border-l-2 border-muted">"Мы действуем из тени, чтобы вы могли жить в свете."</li>
+                  <li className="pl-4 border-l-2 border-muted">"Оставайтесь на связи. Докладывайте о любых изменениях обстановки"</li>
+                  <li className="pl-4 border-l-2 border-muted">"Протокол [УКАЗАТЬ НОМЕР ПРОТОКОЛА] в действии!"</li>
+                  <li className="pl-4 border-l-2 border-destructive">"Помните: Фонд - это все, вы - ничто."</li>
+                </ul>
+              </section>
+
+              <section className="border-2 border-destructive bg-destructive/5 p-6">
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                  <Icon name="BookOpen" size={18} className="text-destructive" />
+                  Дополнительные рекомендации
+                </h3>
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <strong className="text-destructive">Стиль:</strong> Речь должна быть профессиональной, сдержанной и лишенной излишней эмоциональности.
+                  </div>
+                  <div>
+                    <strong className="text-destructive">Четкость:</strong> Инструкции должны быть ясными и не допускать двоякого толкования.
+                  </div>
+                  <div>
+                    <strong className="text-destructive">Краткость:</strong> Нет времени на лишние слова, особенно в критических ситуациях.
+                  </div>
+                  <div>
+                    <strong className="text-destructive">Использование кодовых слов:</strong> Используете кодовые слова которые понятны лишь определенным сотрудникам.
+                  </div>
+                  <div>
+                    <strong className="text-destructive">Стандартизация:</strong> Соблюдение стандартизированных фраз и протоколов повышает эффективность работы и снижает вероятность ошибок.
+                  </div>
+                </div>
+              </section>
+            </CardContent>
+          </Card>
+        )}
 
         <footer className="mt-8 text-center text-xs text-muted-foreground border-t-2 border-border pt-4">
           <p>SCP FOUNDATION © 2025 | ДАННЫЙ ДОКУМЕНТ ЯВЛЯЕТСЯ СОБСТВЕННОСТЬЮ ФОНДА SCP</p>
