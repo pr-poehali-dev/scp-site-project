@@ -233,8 +233,10 @@ const getClassColor = (className: string) => {
 
 const Index = () => {
   const [selectedSCP, setSelectedSCP] = useState<SCPObject | null>(scpDatabase[0]);
-  const [activeTab, setActiveTab] = useState<'database' | 'personnel'>('database');
+  const [activeTab, setActiveTab] = useState<'database' | 'personnel' | 'creator'>('database');
   const [searchQuery, setSearchQuery] = useState('');
+  const [creatorPassword, setCreatorPassword] = useState('');
+  const [isCreatorAuthenticated, setIsCreatorAuthenticated] = useState(false);
 
   const filteredSCPDatabase = scpDatabase.filter((scp) => {
     const query = searchQuery.toLowerCase();
@@ -245,6 +247,15 @@ const Index = () => {
       scp.description.toLowerCase().includes(query)
     );
   });
+
+  const handleCreatorLogin = () => {
+    if (creatorPassword === '5578') {
+      setIsCreatorAuthenticated(true);
+    } else {
+      alert('ОШИБКА: Неверный пароль доступа');
+      setCreatorPassword('');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
@@ -290,6 +301,23 @@ const Index = () => {
             <div className="flex items-center gap-2">
               <Icon name="UserCheck" size={18} />
               ТОЛЬКО ДЛЯ ПЕРСОНАЛА
+            </div>
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('creator');
+              setIsCreatorAuthenticated(false);
+              setCreatorPassword('');
+            }}
+            className={`px-6 py-3 border-2 font-bold text-sm transition-all ${
+              activeTab === 'creator'
+                ? 'border-red-700 bg-red-900/20 text-red-500'
+                : 'border-border hover:border-red-700'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Icon name="Lock" size={18} />
+              ТОЛЬКО ДЛЯ СОЗДАТЕЛЯ
             </div>
           </button>
         </div>
@@ -601,6 +629,125 @@ const Index = () => {
                   </div>
                 </div>
               </section>
+            </CardContent>
+          </Card>
+        )}
+
+        {activeTab === 'creator' && (
+          <Card className="border-4 border-red-700 animate-fade-in bg-black/50">
+            <CardHeader className="border-b-4 border-red-700 bg-red-900/30">
+              <div className="text-center">
+                <div className="text-3xl font-bold mb-2 text-red-500 animate-pulse">
+                  ⚠ O5 COUNCIL CLEARANCE REQUIRED ⚠
+                </div>
+                <div className="text-xs text-red-400">УРОВЕНЬ ДОПУСКА: ТОЛЬКО ДЛЯ СОЗДАТЕЛЯ</div>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="mt-6">
+              {!isCreatorAuthenticated ? (
+                <div className="max-w-md mx-auto">
+                  <div className="border-2 border-red-700 bg-red-950/50 p-8 text-center">
+                    <Icon name="ShieldAlert" size={64} className="mx-auto mb-4 text-red-500" />
+                    <h3 className="text-xl font-bold mb-4 text-red-500">СИСТЕМА ЗАЩИТЫ АКТИВИРОВАНА</h3>
+                    <p className="text-sm text-red-300 mb-6">
+                      Доступ к данному разделу требует авторизации O5 уровня.
+                      Введите код доступа для продолжения.
+                    </p>
+                    
+                    <div className="space-y-4">
+                      <input
+                        type="password"
+                        placeholder="КОД ДОСТУПА"
+                        value={creatorPassword}
+                        onChange={(e) => setCreatorPassword(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleCreatorLogin()}
+                        className="w-full px-4 py-3 bg-black border-2 border-red-700 text-red-500 text-center text-lg font-mono tracking-widest focus:border-red-500 focus:outline-none placeholder-red-900"
+                      />
+                      
+                      <button
+                        onClick={handleCreatorLogin}
+                        className="w-full px-6 py-3 bg-red-900 border-2 border-red-700 text-red-200 font-bold hover:bg-red-800 transition-colors"
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          <Icon name="Unlock" size={18} />
+                          АВТОРИЗОВАТЬСЯ
+                        </div>
+                      </button>
+                    </div>
+                    
+                    <div className="mt-6 text-xs text-red-700">
+                      ПРЕДУПРЕЖДЕНИЕ: Несанкционированные попытки доступа отслеживаются
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  <div className="border-4 border-red-700 bg-black p-6 text-center">
+                    <div className="text-2xl font-bold text-red-500 mb-4 animate-pulse">
+                      ✓ ДОСТУП РАЗРЕШЕН ✓
+                    </div>
+                    <div className="text-xs text-red-400">O5 CLEARANCE VERIFIED</div>
+                  </div>
+
+                  <section className="border-2 border-red-700 bg-red-950/30 p-6">
+                    <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-red-500">
+                      <Icon name="FileKey" size={20} />
+                      ИНФОРМАЦИЯ ТОЛЬКО ДЛЯ СОЗДАТЕЛЯ
+                    </h3>
+                    <div className="space-y-4 text-sm text-red-200">
+                      <div className="border-l-4 border-red-700 pl-4">
+                        <strong className="text-red-400">ИСТИННАЯ ПРИРОДА ОБЪЕКТОВ:</strong>
+                        <p className="mt-2">Все SCP-объекты серии XXXX и YYYY являются частью единого аномального феномена, зародившегося в городе Энгельс. Магазин "Фасоль" служил эпицентром аномальной активности, природа которой до конца не изучена.</p>
+                      </div>
+
+                      <div className="border-l-4 border-red-700 pl-4">
+                        <strong className="text-red-400">СЕМЕЙНЫЕ СВЯЗИ:</strong>
+                        <p className="mt-2">SCP-XXXX (Карточник), SCP-XXXX-2 (Младший Близнечик), SCP-XXXX-3 (Курьер) и SCP-YYYY (Черный Волк) являются биологическими братьями. Их аномальные способности проявились одновременно при неизвестных обстоятельствах.</p>
+                      </div>
+
+                      <div className="border-l-4 border-red-700 pl-4">
+                        <strong className="text-red-400">ПРОТОКОЛ 138:</strong>
+                        <p className="mt-2">Протокол немедленной ликвидации в случае одновременного нарушения содержания более двух объектов из серии XXXX/YYYY. Объединение их способностей представляет угрозу уровня XK.</p>
+                      </div>
+
+                      <div className="border-l-4 border-red-700 pl-4">
+                        <strong className="text-red-400">ЭНГЕЛЬССКИЙ ДИАЛЕКТ (SCP-YYYY-A):</strong>
+                        <p className="mt-2">Мнеметическое воздействие диалекта усиливается при произношении истинных имен объектов: [ДАННЫЕ УДАЛЕНЫ]. Использование имен категорически запрещено.</p>
+                      </div>
+
+                      <div className="border-l-4 border-red-700 pl-4">
+                        <strong className="text-red-400">КОНТРОЛИРУЕМЫЕ СУБЪЕКТЫ:</strong>
+                        <p className="mt-2">Роман Кушнир и Артём Соколов обладают естественным иммунитетом к мнеметическому воздействию объектов серии XXXX/YYYY. Причина неизвестна. Рекомендуется постоянное наблюдение.</p>
+                      </div>
+
+                      <div className="border-4 border-red-900 bg-black p-4 mt-6">
+                        <div className="text-center text-red-600 font-bold mb-2">
+                          ДИРЕКТИВА СОВЕТА O5
+                        </div>
+                        <p className="text-xs text-red-400 text-center">
+                          В случае побега всех объектов серии XXXX/YYYY активировать процедуру ПОЛНАЯ АМНЕЗИЯ для населения города Энгельс. Зона карантина: 50км радиус.
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <div className="text-center">
+                    <button
+                      onClick={() => {
+                        setIsCreatorAuthenticated(false);
+                        setCreatorPassword('');
+                      }}
+                      className="px-6 py-3 bg-red-950 border-2 border-red-700 text-red-400 font-bold hover:bg-red-900 transition-colors"
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <Icon name="LogOut" size={18} />
+                        ВЫЙТИ ИЗ СИСТЕМЫ
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
