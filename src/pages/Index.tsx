@@ -259,6 +259,7 @@ const Index = () => {
     email: '',
     message: ''
   });
+  const [hasSubmittedApplication, setHasSubmittedApplication] = useState(false);
 
   const filteredSCPDatabase = scpDatabase.filter((scp) => {
     const query = searchQuery.toLowerCase();
@@ -275,6 +276,13 @@ const Index = () => {
       loadApplications();
     }
   }, [isCreatorAuthenticated]);
+
+  useEffect(() => {
+    const submitted = localStorage.getItem('scp_application_submitted');
+    if (submitted === 'true') {
+      setHasSubmittedApplication(true);
+    }
+  }, []);
 
   const handleCreatorLogin = () => {
     if (creatorPassword === '5578') {
@@ -336,6 +344,9 @@ const Index = () => {
       
       const data = await response.json();
       if (data.success) {
+        localStorage.setItem('scp_application_submitted', 'true');
+        localStorage.setItem('scp_application_email', applicationForm.email);
+        setHasSubmittedApplication(true);
         alert('Заявка успешно отправлена! Ожидайте рассмотрения.');
         setShowApplicationForm(false);
         setApplicationForm({ full_name: '', age: '', email: '', message: '' });
@@ -377,17 +388,33 @@ const Index = () => {
           </div>
         </header>
 
-        <div className="flex justify-center mb-4">
-          <button
-            onClick={() => setShowApplicationForm(true)}
-            className="px-8 py-3 bg-destructive border-2 border-destructive text-white font-bold hover:bg-destructive/80 transition-colors animate-pulse"
-          >
-            <div className="flex items-center gap-2">
-              <Icon name="FileText" size={20} />
-              ПОДАТЬ ЗАЯВКУ НА ВСТУПЛЕНИЕ
-            </div>
-          </button>
-        </div>
+        {!hasSubmittedApplication ? (
+          <div className="flex justify-center mb-4">
+            <button
+              onClick={() => setShowApplicationForm(true)}
+              className="px-8 py-3 bg-destructive border-2 border-destructive text-white font-bold hover:bg-destructive/80 transition-colors animate-pulse"
+            >
+              <div className="flex items-center gap-2">
+                <Icon name="FileText" size={20} />
+                ПОДАТЬ ЗАЯВКУ НА ВСТУПЛЕНИЕ
+              </div>
+            </button>
+          </div>
+        ) : (
+          <div className="flex justify-center mb-4">
+            <Card className="border-2 border-yellow-600 bg-yellow-900/20 max-w-md">
+              <CardContent className="py-4">
+                <div className="text-center">
+                  <Icon name="Clock" size={32} className="mx-auto mb-2 text-yellow-600" />
+                  <p className="text-sm font-bold text-yellow-600">ЗАЯВКА ОТПРАВЛЕНА</p>
+                  <p className="text-xs text-yellow-700 mt-2">
+                    Ваша заявка находится на рассмотрении. Ожидайте решения Совета O5.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         <div className="flex gap-4 mb-6">
           <button
