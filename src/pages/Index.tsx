@@ -202,6 +202,17 @@ const getClassColor = (className: string) => {
 const Index = () => {
   const [selectedSCP, setSelectedSCP] = useState<SCPObject | null>(scpDatabase[0]);
   const [activeTab, setActiveTab] = useState<'database' | 'personnel'>('database');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredSCPDatabase = scpDatabase.filter((scp) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      scp.id.toLowerCase().includes(query) ||
+      scp.name.toLowerCase().includes(query) ||
+      scp.class.toLowerCase().includes(query) ||
+      scp.description.toLowerCase().includes(query)
+    );
+  });
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
@@ -301,7 +312,30 @@ const Index = () => {
                 </h2>
               </CardHeader>
               <CardContent className="space-y-2">
-                {scpDatabase.map((scp) => (
+                <div className="mb-4">
+                  <div className="relative">
+                    <Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                      type="text"
+                      placeholder="Поиск по ID, названию, классу..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-3 py-2 bg-background border-2 border-border text-sm focus:border-destructive focus:outline-none transition-colors"
+                    />
+                  </div>
+                  {searchQuery && (
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      Найдено: {filteredSCPDatabase.length} из {scpDatabase.length}
+                    </div>
+                  )}
+                </div>
+                {filteredSCPDatabase.length === 0 ? (
+                  <div className="text-center py-8 text-sm text-muted-foreground">
+                    <Icon name="SearchX" size={32} className="mx-auto mb-2 opacity-50" />
+                    Объекты не найдены
+                  </div>
+                ) : (
+                  filteredSCPDatabase.map((scp) => (
                   <button
                     key={scp.id}
                     onClick={() => setSelectedSCP(scp)}
@@ -313,7 +347,7 @@ const Index = () => {
                     <div className="text-xs text-muted-foreground mb-2">{scp.name}</div>
                     <Badge className={getClassColor(scp.class)}>{scp.class}</Badge>
                   </button>
-                ))}
+                )))}
               </CardContent>
             </Card>
           </div>
