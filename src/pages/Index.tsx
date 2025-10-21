@@ -541,7 +541,7 @@ const Index = () => {
 
         <footer className="mt-8 text-center text-xs text-muted-foreground border-t-2 border-border pt-4">
           <p>SCP FOUNDATION © 2025 | ДАННЫЙ ДОКУМЕНТ ЯВЛЯЕТСЯ СОБСТВЕННОСТЬЮ ФОНДА SCP</p>
-          <p className="mt-1">НЕСАНКЦИОНИРОВАННОЕ РАСПРОСТРАНЕНИЕ КАРАЕТСЯ СОГЛАСНО ПРОТОКОЛУ ████-█</p>
+          <p className="mt-1">НЕСАНКЦИОНИРОВАННОЕ РАСПРОСТРАНЕНИЕ КАРАЕТСЯ СОГЛАСНО ПРОТОКОЛУ 138</p>
         </footer>
       </div>
     </div>
