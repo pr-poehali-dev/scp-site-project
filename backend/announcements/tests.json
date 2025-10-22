@@ -1,0 +1,30 @@
+{
+  "tests": [
+    {
+      "name": "Get announcements",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "announcements": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create announcement",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "create",
+        "title": "Test Announcement",
+        "content": "This is a test",
+        "priority": "high"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
