@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 
 interface SCPObject {
@@ -260,6 +262,9 @@ const Index = () => {
     message: ''
   });
   const [hasSubmittedApplication, setHasSubmittedApplication] = useState(false);
+  const [isPersonnelAuthorized, setIsPersonnelAuthorized] = useState(false);
+  const [personnelPassword, setPersonnelPassword] = useState('');
+  const [personnelPasswordError, setPersonnelPasswordError] = useState(false);
 
   const filteredSCPDatabase = scpDatabase.filter((scp) => {
     const query = searchQuery.toLowerCase();
@@ -291,6 +296,22 @@ const Index = () => {
     } else {
       alert('ОШИБКА: Неверный пароль доступа');
       setCreatorPassword('');
+    }
+  };
+
+  const handlePersonnelPasswordSubmit = () => {
+    if (personnelPassword === '5535') {
+      setIsPersonnelAuthorized(true);
+      setPersonnelPasswordError(false);
+      setPersonnelPassword('');
+    } else {
+      setPersonnelPasswordError(true);
+    }
+  };
+
+  const handlePersonnelPasswordKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handlePersonnelPasswordSubmit();
     }
   };
 
@@ -670,6 +691,44 @@ const Index = () => {
             </CardHeader>
             
             <CardContent className="mt-6 space-y-8">
+              {!isPersonnelAuthorized ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Icon name="Lock" size={64} className="text-destructive mb-6" />
+                  <h3 className="text-xl font-bold text-destructive mb-4">ДОСТУП ОГРАНИЧЕН</h3>
+                  <p className="text-sm text-muted-foreground mb-6 text-center max-w-md">
+                    Введите пароль для доступа к секретным данным Фонда SCP
+                  </p>
+                  
+                  <div className="w-full max-w-sm space-y-4">
+                    <Input
+                      type="password"
+                      placeholder="Введите пароль"
+                      value={personnelPassword}
+                      onChange={(e) => {
+                        setPersonnelPassword(e.target.value);
+                        setPersonnelPasswordError(false);
+                      }}
+                      onKeyPress={handlePersonnelPasswordKeyPress}
+                      className={`bg-background border-2 ${
+                        personnelPasswordError ? 'border-destructive' : 'border-muted'
+                      }`}
+                    />
+                    {personnelPasswordError && (
+                      <p className="text-destructive text-sm flex items-center gap-2">
+                        <Icon name="AlertCircle" size={16} />
+                        ОШИБКА: Неверный пароль доступа
+                      </p>
+                    )}
+                    <Button
+                      onClick={handlePersonnelPasswordSubmit}
+                      className="w-full bg-destructive hover:bg-destructive/80 text-white font-bold"
+                    >
+                      ВОЙТИ
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
               <section>
                 <h3 className="text-lg font-bold mb-4 flex items-center gap-2 border-b-2 border-destructive pb-2">
                   <Icon name="MessageSquare" size={18} />
@@ -769,6 +828,7 @@ const Index = () => {
                   </div>
                 </div>
               </section>
+              )}
             </CardContent>
           </Card>
         )}
