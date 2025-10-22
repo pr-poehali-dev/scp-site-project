@@ -75,31 +75,69 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
         
         elif method == 'GET':
-            cur.execute(
-                "SELECT id, full_name, age, email, message, status, created_at FROM applications ORDER BY created_at DESC"
-            )
-            rows = cur.fetchall()
+            query_params = event.get('queryStringParameters', {})
+            email = query_params.get('email') if query_params else None
             
-            applications = []
-            for row in rows:
-                applications.append({
-                    'id': row[0],
-                    'full_name': row[1],
-                    'age': row[2],
-                    'email': row[3],
-                    'message': row[4],
-                    'status': row[5],
-                    'created_at': str(row[6])
-                })
-            
-            return {
-                'statusCode': 200,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                },
-                'body': json.dumps({'applications': applications})
-            }
+            if email:
+                cur.execute(
+                    "SELECT id, full_name, age, email, message, status, created_at FROM applications WHERE email = %s ORDER BY created_at DESC LIMIT 1",
+                    (email,)
+                )
+                row = cur.fetchone()
+                
+                if row:
+                    application = {
+                        'id': row[0],
+                        'full_name': row[1],
+                        'age': row[2],
+                        'email': row[3],
+                        'message': row[4],
+                        'status': row[5],
+                        'created_at': str(row[6])
+                    }
+                    return {
+                        'statusCode': 200,
+                        'headers': {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*'
+                        },
+                        'body': json.dumps({'application': application})
+                    }
+                else:
+                    return {
+                        'statusCode': 404,
+                        'headers': {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*'
+                        },
+                        'body': json.dumps({'error': 'Application not found'})
+                    }
+            else:
+                cur.execute(
+                    "SELECT id, full_name, age, email, message, status, created_at FROM applications ORDER BY created_at DESC"
+                )
+                rows = cur.fetchall()
+                
+                applications = []
+                for row in rows:
+                    applications.append({
+                        'id': row[0],
+                        'full_name': row[1],
+                        'age': row[2],
+                        'email': row[3],
+                        'message': row[4],
+                        'status': row[5],
+                        'created_at': str(row[6])
+                    })
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'body': json.dumps({'applications': applications})
+                }
         
         return {
             'statusCode': 405,

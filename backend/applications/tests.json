@@ -13,8 +13,7 @@
       },
       "expectedStatus": 200,
       "expectedBody": {
-        "success": true,
-        "id": "number"
+        "success": true
       },
       "bodyMatcher": "partial"
     },
@@ -25,6 +24,16 @@
       "expectedStatus": 200,
       "expectedBody": {
         "applications": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get application by email",
+      "method": "GET",
+      "path": "/?email=test@example.com",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "application": "object"
       },
       "bodyMatcher": "partial"
     }

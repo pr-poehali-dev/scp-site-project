@@ -262,6 +262,7 @@ const Index = () => {
     message: ''
   });
   const [hasSubmittedApplication, setHasSubmittedApplication] = useState(false);
+  const [applicationStatus, setApplicationStatus] = useState<string>('');
   const [isPersonnelAuthorized, setIsPersonnelAuthorized] = useState(false);
   const [personnelPassword, setPersonnelPassword] = useState('');
   const [personnelPasswordError, setPersonnelPasswordError] = useState(false);
@@ -284,10 +285,38 @@ const Index = () => {
 
   useEffect(() => {
     const submitted = localStorage.getItem('scp_application_submitted');
+    const status = localStorage.getItem('scp_application_status');
     if (submitted === 'true') {
       setHasSubmittedApplication(true);
+      if (status) {
+        setApplicationStatus(status);
+      }
     }
   }, []);
+
+  useEffect(() => {
+    const checkApplicationStatus = async () => {
+      const email = localStorage.getItem('scp_application_email');
+      if (email && hasSubmittedApplication) {
+        try {
+          const response = await fetch(`https://functions.poehali.dev/921b7740-88ac-47cd-9ee4-772236e3de28?email=${encodeURIComponent(email)}`);
+          const data = await response.json();
+          if (data.application && data.application.status !== 'pending') {
+            setApplicationStatus(data.application.status);
+            localStorage.setItem('scp_application_status', data.application.status);
+          }
+        } catch (error) {
+          console.error('Ошибка проверки статуса:', error);
+        }
+      }
+    };
+
+    if (hasSubmittedApplication && !applicationStatus) {
+      checkApplicationStatus();
+      const interval = setInterval(checkApplicationStatus, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [hasSubmittedApplication, applicationStatus]);
 
   const handleCreatorLogin = () => {
     if (creatorPassword === '5578') {
@@ -423,17 +452,47 @@ const Index = () => {
           </div>
         ) : (
           <div className="flex justify-center mb-4">
-            <Card className="border-2 border-yellow-600 bg-yellow-900/20 max-w-md">
-              <CardContent className="py-4">
-                <div className="text-center">
-                  <Icon name="Clock" size={32} className="mx-auto mb-2 text-yellow-600" />
-                  <p className="text-sm font-bold text-yellow-600">ЗАЯВКА ОТПРАВЛЕНА</p>
-                  <p className="text-xs text-yellow-700 mt-2">
-                    Ваша заявка находится на рассмотрении. Ожидайте решения Совета O5.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            {applicationStatus === 'approved' ? (
+              <Card className="border-2 border-green-600 bg-green-900/20 max-w-md">
+                <CardContent className="py-4">
+                  <div className="text-center">
+                    <Icon name="CheckCircle" size={32} className="mx-auto mb-2 text-green-600" />
+                    <p className="text-sm font-bold text-green-600">ЗАЯВКА ОДОБРЕНА</p>
+                    <p className="text-xs text-green-700 mt-2">
+                      Добро пожаловать в Фонд SCP! Вам присвоен уровень допуска 3.
+                    </p>
+                    <div className="mt-4 bg-black/40 p-3 rounded border border-green-600/50">
+                      <p className="text-xs text-green-400 mb-1">Пароль для доступа к разделу персонала:</p>
+                      <p className="text-lg font-bold text-green-500 tracking-widest">5535</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : applicationStatus === 'rejected' ? (
+              <Card className="border-2 border-red-600 bg-red-900/20 max-w-md">
+                <CardContent className="py-4">
+                  <div className="text-center">
+                    <Icon name="XCircle" size={32} className="mx-auto mb-2 text-red-600" />
+                    <p className="text-sm font-bold text-red-600">ЗАЯВКА ОТКЛОНЕНА</p>
+                    <p className="text-xs text-red-700 mt-2">
+                      К сожалению, ваша заявка не соответствует требованиям Фонда SCP.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border-2 border-yellow-600 bg-yellow-900/20 max-w-md">
+                <CardContent className="py-4">
+                  <div className="text-center">
+                    <Icon name="Clock" size={32} className="mx-auto mb-2 text-yellow-600" />
+                    <p className="text-sm font-bold text-yellow-600">ЗАЯВКА ОТПРАВЛЕНА</p>
+                    <p className="text-xs text-yellow-700 mt-2">
+                      Ваша заявка находится на рассмотрении. Ожидайте решения Совета O5.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
 
