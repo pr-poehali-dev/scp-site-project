@@ -33,6 +33,69 @@ export const PersonnelSection = ({
   onAuthorize,
   onUpdateStatus
 }: PersonnelSectionProps) => {
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [showNewAnnouncement, setShowNewAnnouncement] = useState(false);
+  const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '', priority: 'normal' });
+
+  useEffect(() => {
+    if (isAuthorized) {
+      loadAnnouncements();
+      const interval = setInterval(loadAnnouncements, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [isAuthorized]);
+
+  const loadAnnouncements = async () => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/c629740d-0bd9-4d42-ba74-971a06ae6868');
+      const data = await response.json();
+      setAnnouncements(data.announcements || []);
+    } catch (error) {
+      console.error('Ошибка загрузки объявлений:', error);
+    }
+  };
+
+  const createAnnouncement = async () => {
+    if (!newAnnouncement.title || !newAnnouncement.content) {
+      alert('Заполните все поля');
+      return;
+    }
+
+    try {
+      const response = await fetch('https://functions.poehali.dev/c629740d-0bd9-4d42-ba74-971a06ae6868', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'create',
+          ...newAnnouncement
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setNewAnnouncement({ title: '', content: '', priority: 'normal' });
+        setShowNewAnnouncement(false);
+        loadAnnouncements();
+      }
+    } catch (error) {
+      alert('Ошибка создания объявления');
+    }
+  };
+
+  const deleteAnnouncement = async (id: number) => {
+    if (!confirm('Удалить объявление?')) return;
+
+    try {
+      await fetch('https://functions.poehali.dev/c629740d-0bd9-4d42-ba74-971a06ae6868', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', id })
+      });
+      loadAnnouncements();
+    } catch (error) {
+      alert('Ошибка удаления объявления');
+    }
+  };
   if (!isAuthorized) {
     return (
       <Card className="border-2 border-destructive mb-8">
@@ -89,6 +152,99 @@ export const PersonnelSection = ({
             <p className="text-xs text-muted-foreground">
               Уровень допуска: 3 | Вы имеете доступ к управлению заявками на вступление в Фонд SCP.
             </p>
+          </div>
+
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-yellow-600">ОБЪЯВЛЕНИЯ ФОНДА</h3>
+              <Button
+                onClick={() => setShowNewAnnouncement(!showNewAnnouncement)}
+                className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                size="sm"
+              >
+                <Icon name="Plus" size={16} className="mr-1" />
+                НОВОЕ ОБЪЯВЛЕНИЕ
+              </Button>
+            </div>
+
+            {showNewAnnouncement && (
+              <Card className="border-2 border-yellow-600 mb-4">
+                <CardContent className="p-4">
+                  <div className="space-y-3">
+                    <Input
+                      placeholder="Заголовок объявления"
+                      value={newAnnouncement.title}
+                      onChange={(e) => setNewAnnouncement({...newAnnouncement, title: e.target.value})}
+                      className="border-yellow-600/50"
+                    />
+                    <textarea
+                      placeholder="Текст объявления"
+                      value={newAnnouncement.content}
+                      onChange={(e) => setNewAnnouncement({...newAnnouncement, content: e.target.value})}
+                      className="w-full min-h-[100px] p-3 bg-background border-2 border-yellow-600/50 rounded-md text-foreground"
+                    />
+                    <div className="flex gap-2">
+                      <select
+                        value={newAnnouncement.priority}
+                        onChange={(e) => setNewAnnouncement({...newAnnouncement, priority: e.target.value})}
+                        className="flex-1 p-2 bg-background border-2 border-yellow-600/50 rounded-md text-foreground"
+                      >
+                        <option value="normal">Обычный</option>
+                        <option value="high">Высокий приоритет</option>
+                      </select>
+                      <Button onClick={createAnnouncement} className="bg-yellow-600 hover:bg-yellow-700">
+                        ОПУБЛИКОВАТЬ
+                      </Button>
+                      <Button onClick={() => setShowNewAnnouncement(false)} variant="outline">
+                        ОТМЕНА
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {announcements.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Нет объявлений</p>
+            ) : (
+              <div className="space-y-3">
+                {announcements.map((announcement) => (
+                  <Card
+                    key={announcement.id}
+                    className={`border-2 ${
+                      announcement.priority === 'high'
+                        ? 'border-red-600 bg-red-900/10'
+                        : 'border-yellow-600/50 bg-yellow-900/5'
+                    }`}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            {announcement.priority === 'high' && (
+                              <Icon name="AlertTriangle" size={16} className="text-red-600" />
+                            )}
+                            <h4 className="font-bold text-sm">{announcement.title}</h4>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{announcement.content}</p>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {new Date(announcement.created_at).toLocaleString('ru-RU')}
+                          </p>
+                        </div>
+                        <Button
+                          onClick={() => deleteAnnouncement(announcement.id)}
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-600/10"
+                        >
+                          <Icon name="Trash2" size={16} />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
 
           <div>
