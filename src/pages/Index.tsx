@@ -828,6 +828,7 @@ const Index = () => {
                   </div>
                 </div>
               </section>
+              </>
               )}
             </CardContent>
           </Card>
