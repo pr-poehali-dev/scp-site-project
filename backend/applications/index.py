@@ -40,6 +40,49 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 message = body_data.get('message', '')
                 
                 cur.execute(
+                    "SELECT id, status, created_at FROM applications WHERE email = %s ORDER BY created_at DESC LIMIT 1",
+                    (email,)
+                )
+                existing = cur.fetchone()
+                
+                if existing:
+                    existing_status = existing[1]
+                    existing_created_at = existing[2]
+                    
+                    from datetime import datetime, timedelta
+                    current_time = datetime.now()
+                    time_diff = current_time - existing_created_at
+                    
+                    if existing_status == 'pending':
+                        return {
+                            'statusCode': 400,
+                            'headers': {
+                                'Content-Type': 'application/json',
+                                'Access-Control-Allow-Origin': '*'
+                            },
+                            'body': json.dumps({'success': False, 'error': 'У вас уже есть заявка на рассмотрении'})
+                        }
+                    elif existing_status == 'approved':
+                        return {
+                            'statusCode': 400,
+                            'headers': {
+                                'Content-Type': 'application/json',
+                                'Access-Control-Allow-Origin': '*'
+                            },
+                            'body': json.dumps({'success': False, 'error': 'Ваша заявка уже одобрена'})
+                        }
+                    elif existing_status == 'rejected' and time_diff < timedelta(days=2):
+                        hours_left = int((timedelta(days=2) - time_diff).total_seconds() / 3600)
+                        return {
+                            'statusCode': 400,
+                            'headers': {
+                                'Content-Type': 'application/json',
+                                'Access-Control-Allow-Origin': '*'
+                            },
+                            'body': json.dumps({'success': False, 'error': f'Повторная заявка возможна через {hours_left} часов'})
+                        }
+                
+                cur.execute(
                     "INSERT INTO applications (full_name, age, email, message, status) VALUES (%s, %s, %s, %s, %s) RETURNING id",
                     (full_name, age, email, message, 'pending')
                 )

@@ -266,6 +266,7 @@ const Index = () => {
   const [isPersonnelAuthorized, setIsPersonnelAuthorized] = useState(false);
   const [personnelPassword, setPersonnelPassword] = useState('');
   const [personnelPasswordError, setPersonnelPasswordError] = useState(false);
+  const [timeUntilResubmit, setTimeUntilResubmit] = useState<string>('');
 
   const filteredSCPDatabase = scpDatabase.filter((scp) => {
     const query = searchQuery.toLowerCase();
@@ -286,10 +287,52 @@ const Index = () => {
   useEffect(() => {
     const submitted = localStorage.getItem('scp_application_submitted');
     const status = localStorage.getItem('scp_application_status');
-    if (submitted === 'true') {
-      setHasSubmittedApplication(true);
-      if (status) {
-        setApplicationStatus(status);
+    const timestamp = localStorage.getItem('scp_application_timestamp');
+    
+    if (submitted === 'true' && timestamp) {
+      const submittedTime = parseInt(timestamp);
+      const currentTime = Date.now();
+      const twoDaysInMs = 2 * 24 * 60 * 60 * 1000;
+      
+      if (currentTime - submittedTime >= twoDaysInMs && status === 'rejected') {
+        localStorage.removeItem('scp_application_submitted');
+        localStorage.removeItem('scp_application_status');
+        localStorage.removeItem('scp_application_timestamp');
+        localStorage.removeItem('scp_application_email');
+        setHasSubmittedApplication(false);
+        setApplicationStatus('');
+      } else {
+        setHasSubmittedApplication(true);
+        if (status) {
+          setApplicationStatus(status);
+        }
+        
+        if (status === 'rejected') {
+          const timeLeft = twoDaysInMs - (currentTime - submittedTime);
+          const hours = Math.floor(timeLeft / (60 * 60 * 1000));
+          const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
+          setTimeUntilResubmit(`${hours}ч ${minutes}м`);
+          
+          const interval = setInterval(() => {
+            const now = Date.now();
+            const left = twoDaysInMs - (now - submittedTime);
+            if (left <= 0) {
+              localStorage.removeItem('scp_application_submitted');
+              localStorage.removeItem('scp_application_status');
+              localStorage.removeItem('scp_application_timestamp');
+              localStorage.removeItem('scp_application_email');
+              setHasSubmittedApplication(false);
+              setApplicationStatus('');
+              clearInterval(interval);
+            } else {
+              const h = Math.floor(left / (60 * 60 * 1000));
+              const m = Math.floor((left % (60 * 60 * 1000)) / (60 * 1000));
+              setTimeUntilResubmit(`${h}ч ${m}м`);
+            }
+          }, 60000);
+          
+          return () => clearInterval(interval);
+        }
       }
     }
   }, []);
@@ -304,6 +347,24 @@ const Index = () => {
           if (data.application && data.application.status !== 'pending') {
             setApplicationStatus(data.application.status);
             localStorage.setItem('scp_application_status', data.application.status);
+            
+            if (data.application.status === 'rejected') {
+              const timestamp = localStorage.getItem('scp_application_timestamp');
+              if (timestamp) {
+                const submittedTime = parseInt(timestamp);
+                const currentTime = Date.now();
+                const twoDaysInMs = 2 * 24 * 60 * 60 * 1000;
+                
+                if (currentTime - submittedTime >= twoDaysInMs) {
+                  localStorage.removeItem('scp_application_submitted');
+                  localStorage.removeItem('scp_application_status');
+                  localStorage.removeItem('scp_application_timestamp');
+                  localStorage.removeItem('scp_application_email');
+                  setHasSubmittedApplication(false);
+                  setApplicationStatus('');
+                }
+              }
+            }
           }
         } catch (error) {
           console.error('Ошибка проверки статуса:', error);
@@ -311,7 +372,7 @@ const Index = () => {
       }
     };
 
-    if (hasSubmittedApplication && !applicationStatus) {
+    if (hasSubmittedApplication && applicationStatus !== 'approved') {
       checkApplicationStatus();
       const interval = setInterval(checkApplicationStatus, 30000);
       return () => clearInterval(interval);
@@ -396,10 +457,15 @@ const Index = () => {
       if (data.success) {
         localStorage.setItem('scp_application_submitted', 'true');
         localStorage.setItem('scp_application_email', applicationForm.email);
+        localStorage.setItem('scp_application_timestamp', Date.now().toString());
+        localStorage.setItem('scp_application_status', 'pending');
         setHasSubmittedApplication(true);
+        setApplicationStatus('pending');
         alert('Заявка успешно отправлена! Ожидайте рассмотрения.');
         setShowApplicationForm(false);
         setApplicationForm({ full_name: '', age: '', email: '', message: '' });
+      } else if (data.error) {
+        alert(data.error);
       }
     } catch (error) {
       alert('Ошибка отправки заявки');
@@ -477,6 +543,13 @@ const Index = () => {
                     <p className="text-xs text-red-700 mt-2">
                       К сожалению, ваша заявка не соответствует требованиям Фонда SCP.
                     </p>
+                    {timeUntilResubmit && (
+                      <div className="mt-3 bg-black/40 p-2 rounded border border-red-600/50">
+                        <p className="text-xs text-red-400">
+                          Повторная подача заявки возможна через: <span className="font-bold">{timeUntilResubmit}</span>
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
