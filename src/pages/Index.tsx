@@ -179,7 +179,7 @@ const Index = () => {
   };
 
   const handlePersonnelPasswordSubmit = () => {
-    if (personnelPassword === '5535') {
+    if (personnelPassword === '5578') {
       setIsPersonnelAuthorized(true);
       setPersonnelPasswordError(false);
       setPersonnelPassword('');
