@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,14 @@ interface Application {
   email: string;
   message: string;
   status: string;
+  created_at: string;
+}
+
+interface Announcement {
+  id: number;
+  title: string;
+  content: string;
+  priority: string;
   created_at: string;
 }
 
