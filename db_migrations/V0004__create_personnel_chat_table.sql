@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS personnel_chat (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(100) NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

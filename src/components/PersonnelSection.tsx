@@ -22,6 +22,13 @@ interface Announcement {
   created_at: string;
 }
 
+interface ChatMessage {
+  id: number;
+  username: string;
+  message: string;
+  created_at: string;
+}
+
 interface PersonnelSectionProps {
   isAuthorized: boolean;
   password: string;
@@ -44,12 +51,21 @@ export const PersonnelSection = ({
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [showNewAnnouncement, setShowNewAnnouncement] = useState(false);
   const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '', priority: 'normal' });
+  
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [username, setUsername] = useState('Агент-' + Math.floor(Math.random() * 9999));
 
   useEffect(() => {
     if (isAuthorized) {
       loadAnnouncements();
-      const interval = setInterval(loadAnnouncements, 30000);
-      return () => clearInterval(interval);
+      loadChatMessages();
+      const announcementInterval = setInterval(loadAnnouncements, 30000);
+      const chatInterval = setInterval(loadChatMessages, 5000);
+      return () => {
+        clearInterval(announcementInterval);
+        clearInterval(chatInterval);
+      };
     }
   }, [isAuthorized]);
 
@@ -102,6 +118,36 @@ export const PersonnelSection = ({
       loadAnnouncements();
     } catch (error) {
       alert('Ошибка удаления объявления');
+    }
+  };
+
+  const loadChatMessages = async () => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/e1f16e6e-1835-467f-b56f-2a190a732f87');
+      const data = await response.json();
+      setChatMessages(data.messages || []);
+    } catch (error) {
+      console.error('Ошибка загрузки сообщений чата:', error);
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!newMessage.trim()) return;
+
+    try {
+      const response = await fetch('https://functions.poehali.dev/e1f16e6e-1835-467f-b56f-2a190a732f87', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, message: newMessage })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setNewMessage('');
+        loadChatMessages();
+      }
+    } catch (error) {
+      alert('Ошибка отправки сообщения');
     }
   };
   if (!isAuthorized) {
@@ -253,6 +299,64 @@ export const PersonnelSection = ({
                 ))}
               </div>
             )}
+          </div>
+
+          <div>
+            <h3 className="text-lg font-bold text-blue-600 mb-4">ЧАТ СОТРУДНИКОВ</h3>
+            <Card className="border-2 border-blue-600/50 mb-6">
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  <div className="bg-blue-900/10 p-3 rounded border border-blue-600/30 min-h-[300px] max-h-[400px] overflow-y-auto">
+                    {chatMessages.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center">Нет сообщений</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {chatMessages.map((msg) => (
+                          <div key={msg.id} className="bg-background/80 p-2 rounded">
+                            <div className="flex justify-between items-start mb-1">
+                              <span className="text-sm font-bold text-blue-600">{msg.username}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(msg.created_at).toLocaleTimeString('ru-RU', {
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                            </div>
+                            <p className="text-sm">{msg.message}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Ваше имя"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="w-32 border-blue-600/50"
+                    />
+                    <Input
+                      placeholder="Введите сообщение..."
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          sendMessage();
+                        }
+                      }}
+                      className="flex-1 border-blue-600/50"
+                    />
+                    <Button
+                      onClick={sendMessage}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      <Icon name="Send" size={16} />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           <div>

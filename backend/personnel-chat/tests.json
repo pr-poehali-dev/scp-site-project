@@ -1,0 +1,20 @@
+{
+  "tests": [
+    {
+      "name": "Get chat messages",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Post new message",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "username": "Agent Smith",
+        "message": "Test message"
+      },
+      "expectedStatus": 201
+    }
+  ]
+}
