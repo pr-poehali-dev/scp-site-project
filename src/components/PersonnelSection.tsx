@@ -55,11 +55,13 @@ export const PersonnelSection = ({
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [username, setUsername] = useState('Агент-' + Math.floor(Math.random() * 9999));
+  const [userSuffix, setUserSuffix] = useState<string | null>(null);
 
   useEffect(() => {
     if (isAuthorized) {
       loadAnnouncements();
       loadChatMessages();
+      loadUserSuffix();
       const announcementInterval = setInterval(loadAnnouncements, 30000);
       const chatInterval = setInterval(loadChatMessages, 5000);
       return () => {
@@ -68,6 +70,21 @@ export const PersonnelSection = ({
       };
     }
   }, [isAuthorized]);
+
+  const loadUserSuffix = async () => {
+    const storedEmail = localStorage.getItem('scp_application_email');
+    if (!storedEmail) return;
+
+    try {
+      const response = await fetch(`https://functions.poehali.dev/b3d339c0-f350-48c0-845a-3e246cea0120?email=${encodeURIComponent(storedEmail)}`);
+      const data = await response.json();
+      if (data.suffix) {
+        setUserSuffix(data.suffix);
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки суффикса:', error);
+    }
+  };
 
   const loadAnnouncements = async () => {
     try {
@@ -134,11 +151,13 @@ export const PersonnelSection = ({
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
 
+    const displayName = userSuffix ? `${username} | ${userSuffix}` : username;
+
     try {
       const response = await fetch('https://functions.poehali.dev/e1f16e6e-1835-467f-b56f-2a190a732f87', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, message: newMessage })
+        body: JSON.stringify({ username: displayName, message: newMessage })
       });
 
       const data = await response.json();

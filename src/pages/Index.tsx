@@ -5,6 +5,7 @@ import { SCPHeader } from '@/components/SCPHeader';
 import { ApplicationForm } from '@/components/ApplicationForm';
 import { ApplicationStatus } from '@/components/ApplicationStatus';
 import { PersonnelSection } from '@/components/PersonnelSection';
+import { SuffixManager } from '@/components/SuffixManager';
 import { SCPGrid } from '@/components/SCPGrid';
 import { scpDatabase } from '@/data/scpDatabase';
 
@@ -25,6 +26,9 @@ const Index = () => {
   const [isPersonnelAuthorized, setIsPersonnelAuthorized] = useState(false);
   const [personnelPassword, setPersonnelPassword] = useState('');
   const [personnelPasswordError, setPersonnelPasswordError] = useState(false);
+  const [isSuffixAuthorized, setIsSuffixAuthorized] = useState(false);
+  const [suffixPassword, setSuffixPassword] = useState('');
+  const [suffixPasswordError, setSuffixPasswordError] = useState(false);
   const [timeUntilResubmit, setTimeUntilResubmit] = useState<string>('');
   const [applications, setApplications] = useState<Application[]>([]);
 
@@ -188,6 +192,16 @@ const Index = () => {
     }
   };
 
+  const handleSuffixPasswordSubmit = () => {
+    if (suffixPassword === '7771') {
+      setIsSuffixAuthorized(true);
+      setSuffixPasswordError(false);
+      setSuffixPassword('');
+    } else {
+      setSuffixPasswordError(true);
+    }
+  };
+
   const updateApplicationStatus = async (id: number, status: string) => {
     try {
       await fetch('https://functions.poehali.dev/921b7740-88ac-47cd-9ee4-772236e3de28', {
@@ -239,6 +253,14 @@ const Index = () => {
           onPasswordChange={setPersonnelPassword}
           onAuthorize={handlePersonnelPasswordSubmit}
           onUpdateStatus={updateApplicationStatus}
+        />
+
+        <SuffixManager
+          isAuthorized={isSuffixAuthorized}
+          password={suffixPassword}
+          passwordError={suffixPasswordError}
+          onPasswordChange={setSuffixPassword}
+          onAuthorize={handleSuffixPasswordSubmit}
         />
 
         <SCPGrid scpObjects={scpDatabase} isPersonnelAuthorized={isPersonnelAuthorized} />

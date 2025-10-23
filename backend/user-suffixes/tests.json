@@ -1,0 +1,20 @@
+{
+  "tests": [
+    {
+      "name": "Get all suffixes",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Assign suffix to user",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "email": "test@example.com",
+        "suffix": "Стажер"
+      },
+      "expectedStatus": 201
+    }
+  ]
+}
