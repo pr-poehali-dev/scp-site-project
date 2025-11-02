@@ -1,24 +1,25 @@
 {
   "tests": [
     {
-      "name": "Get announcements",
+      "name": "Get all punishments",
       "method": "GET",
       "path": "/",
       "expectedStatus": 200,
       "expectedBody": {
-        "announcements": "array"
+        "punishments": []
       },
       "bodyMatcher": "partial"
     },
     {
-      "name": "Create announcement",
+      "name": "Add warning",
       "method": "POST",
       "path": "/",
       "body": {
-        "action": "create",
-        "title": "Test Announcement",
-        "content": "This is a test",
-        "priority": "high"
+        "action": "punish",
+        "user_id": 1,
+        "punishment_type": "warning",
+        "reason": "Нарушение правил",
+        "created_by": "admin"
       },
       "expectedStatus": 200,
       "expectedBody": {

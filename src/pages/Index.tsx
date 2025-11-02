@@ -7,6 +7,7 @@ import { ApplicationStatus } from '@/components/ApplicationStatus';
 import { PersonnelSection } from '@/components/PersonnelSection';
 import { SuffixManager } from '@/components/SuffixManager';
 import { SecretSection } from '@/components/SecretSection';
+import { AdminSection } from '@/components/AdminSection';
 import { SCPGrid } from '@/components/SCPGrid';
 import { scpDatabase } from '@/data/scpDatabase';
 
@@ -33,6 +34,9 @@ const Index = () => {
   const [isSecretAuthorized, setIsSecretAuthorized] = useState(false);
   const [secretPassword, setSecretPassword] = useState('');
   const [secretPasswordError, setSecretPasswordError] = useState(false);
+  const [isAdminAuthorized, setIsAdminAuthorized] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminPasswordError, setAdminPasswordError] = useState(false);
   const [timeUntilResubmit, setTimeUntilResubmit] = useState<string>('');
   const [applications, setApplications] = useState<Application[]>([]);
 
@@ -216,6 +220,16 @@ const Index = () => {
     }
   };
 
+  const handleAdminPasswordSubmit = () => {
+    if (adminPassword === '060320') {
+      setIsAdminAuthorized(true);
+      setAdminPasswordError(false);
+      setAdminPassword('');
+    } else {
+      setAdminPasswordError(true);
+    }
+  };
+
   const updateApplicationStatus = async (id: number, status: string) => {
     try {
       await fetch('https://functions.poehali.dev/921b7740-88ac-47cd-9ee4-772236e3de28', {
@@ -283,6 +297,14 @@ const Index = () => {
           passwordError={secretPasswordError}
           onPasswordChange={setSecretPassword}
           onAuthorize={handleSecretPasswordSubmit}
+        />
+
+        <AdminSection
+          isAuthorized={isAdminAuthorized}
+          password={adminPassword}
+          passwordError={adminPasswordError}
+          onPasswordChange={setAdminPassword}
+          onAuthorize={handleAdminPasswordSubmit}
         />
 
         <SCPGrid scpObjects={scpDatabase} isPersonnelAuthorized={isPersonnelAuthorized} />

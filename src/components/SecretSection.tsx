@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
+import { ReportButton } from '@/components/ReportButton';
 
 interface SecretSectionProps {
   isAuthorized: boolean;
@@ -322,14 +323,20 @@ export const SecretSection = ({
             ) : (
               users.map((user) => (
                 <div key={user.id} className="p-3 bg-black/40 border border-red-900/30 rounded">
-                  <div className="flex justify-between items-center">
-                    <div>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
                       <p className="text-red-100 font-bold">{user.username}</p>
                       <p className="text-red-400 text-sm">{user.email}</p>
+                      <p className="text-xs text-red-500 mt-1">
+                        {new Date(user.created_at).toLocaleString('ru-RU')}
+                      </p>
                     </div>
-                    <div className="text-right text-xs text-red-500">
-                      {new Date(user.created_at).toLocaleString('ru-RU')}
-                    </div>
+                    {currentUser?.id !== user.id && (
+                      <ReportButton 
+                        reportedUserId={user.id} 
+                        reportedUsername={user.username} 
+                      />
+                    )}
                   </div>
                 </div>
               ))
