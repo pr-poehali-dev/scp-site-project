@@ -6,6 +6,7 @@ import { ApplicationForm } from '@/components/ApplicationForm';
 import { ApplicationStatus } from '@/components/ApplicationStatus';
 import { PersonnelSection } from '@/components/PersonnelSection';
 import { SuffixManager } from '@/components/SuffixManager';
+import { SecretSection } from '@/components/SecretSection';
 import { SCPGrid } from '@/components/SCPGrid';
 import { scpDatabase } from '@/data/scpDatabase';
 
@@ -29,6 +30,9 @@ const Index = () => {
   const [isSuffixAuthorized, setIsSuffixAuthorized] = useState(false);
   const [suffixPassword, setSuffixPassword] = useState('');
   const [suffixPasswordError, setSuffixPasswordError] = useState(false);
+  const [isSecretAuthorized, setIsSecretAuthorized] = useState(false);
+  const [secretPassword, setSecretPassword] = useState('');
+  const [secretPasswordError, setSecretPasswordError] = useState(false);
   const [timeUntilResubmit, setTimeUntilResubmit] = useState<string>('');
   const [applications, setApplications] = useState<Application[]>([]);
 
@@ -183,7 +187,7 @@ const Index = () => {
   };
 
   const handlePersonnelPasswordSubmit = () => {
-    if (personnelPassword === '5578') {
+    if (personnelPassword === '5535') {
       setIsPersonnelAuthorized(true);
       setPersonnelPasswordError(false);
       setPersonnelPassword('');
@@ -199,6 +203,16 @@ const Index = () => {
       setSuffixPassword('');
     } else {
       setSuffixPasswordError(true);
+    }
+  };
+
+  const handleSecretPasswordSubmit = () => {
+    if (secretPassword === '1233') {
+      setIsSecretAuthorized(true);
+      setSecretPasswordError(false);
+      setSecretPassword('');
+    } else {
+      setSecretPasswordError(true);
     }
   };
 
@@ -261,6 +275,14 @@ const Index = () => {
           passwordError={suffixPasswordError}
           onPasswordChange={setSuffixPassword}
           onAuthorize={handleSuffixPasswordSubmit}
+        />
+
+        <SecretSection
+          isAuthorized={isSecretAuthorized}
+          password={secretPassword}
+          passwordError={secretPasswordError}
+          onPasswordChange={setSecretPassword}
+          onAuthorize={handleSecretPasswordSubmit}
         />
 
         <SCPGrid scpObjects={scpDatabase} isPersonnelAuthorized={isPersonnelAuthorized} />
