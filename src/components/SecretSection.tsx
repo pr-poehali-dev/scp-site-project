@@ -228,6 +228,17 @@ export const SecretSection = ({
                   <Icon name="LogIn" size={18} className="mr-2" />
                   Войти
                 </Button>
+                <div className="text-center mt-4">
+                  <p className="text-red-400 text-sm mb-2">Нет аккаунта?</p>
+                  <Button 
+                    onClick={() => setActiveTab('register')} 
+                    variant="outline" 
+                    className="w-full border-red-900/50 text-red-400 hover:bg-red-900/20"
+                  >
+                    <Icon name="UserPlus" size={18} className="mr-2" />
+                    Зарегистрироваться
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="space-y-4">
