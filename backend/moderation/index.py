@@ -110,7 +110,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             expires_at = None
-            if duration_minutes:
+            if duration_minutes and duration_minutes > 0:
                 expires_at = datetime.now() + timedelta(minutes=duration_minutes)
             
             warnings_count = 0

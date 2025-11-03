@@ -9,6 +9,7 @@ import { SuffixManager } from '@/components/SuffixManager';
 import { SecretSection } from '@/components/SecretSection';
 import { AdminSection } from '@/components/AdminSection';
 import { SCPGrid } from '@/components/SCPGrid';
+import { SecretEasterEgg } from '@/components/SecretEasterEgg';
 import { scpDatabase } from '@/data/scpDatabase';
 
 interface Application {
@@ -39,6 +40,7 @@ const Index = () => {
   const [adminPasswordError, setAdminPasswordError] = useState(false);
   const [timeUntilResubmit, setTimeUntilResubmit] = useState<string>('');
   const [applications, setApplications] = useState<Application[]>([]);
+  const [showEasterEgg, setShowEasterEgg] = useState(false);
 
   useEffect(() => {
     const submitted = localStorage.getItem('scp_application_submitted');
@@ -230,6 +232,10 @@ const Index = () => {
     }
   };
 
+  const handleCodeReveal = (code: string) => {
+    setAdminPassword(code);
+  };
+
   const updateApplicationStatus = async (id: number, status: string) => {
     try {
       await fetch('https://functions.poehali.dev/921b7740-88ac-47cd-9ee4-772236e3de28', {
@@ -298,6 +304,19 @@ const Index = () => {
           onPasswordChange={setSecretPassword}
           onAuthorize={handleSecretPasswordSubmit}
         />
+
+        <div className="mb-8">
+          <Button
+            onClick={() => setShowEasterEgg(!showEasterEgg)}
+            variant="ghost"
+            className="w-full text-red-800 hover:text-red-600 text-xs"
+          >
+            {showEasterEgg ? '▼ Скрыть 5535' : '▶ Показать 5535'}
+          </Button>
+          {showEasterEgg && (
+            <SecretEasterEgg onCodeReveal={handleCodeReveal} />
+          )}
+        </div>
 
         <AdminSection
           isAuthorized={isAdminAuthorized}
