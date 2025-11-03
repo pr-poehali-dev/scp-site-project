@@ -10,6 +10,8 @@ import { SecretSection } from '@/components/SecretSection';
 import { AdminSection } from '@/components/AdminSection';
 import { SCPGrid } from '@/components/SCPGrid';
 import { SecretEasterEgg } from '@/components/SecretEasterEgg';
+import { RecruitmentSection } from '@/components/RecruitmentSection';
+import { RanksSection } from '@/components/RanksSection';
 import { scpDatabase } from '@/data/scpDatabase';
 
 interface Application {
@@ -236,6 +238,14 @@ const Index = () => {
     setAdminPassword(code);
   };
 
+  const handleSecretPasswordReceived = (password: string) => {
+    if (password === 'LEVEL-5-ACCESS') {
+      setIsSecretAuthorized(true);
+      setSecretPasswordError(false);
+      setSecretPassword('');
+    }
+  };
+
   const updateApplicationStatus = async (id: number, status: string) => {
     try {
       await fetch('https://functions.poehali.dev/921b7740-88ac-47cd-9ee4-772236e3de28', {
@@ -297,6 +307,8 @@ const Index = () => {
           onAuthorize={handleSuffixPasswordSubmit}
         />
 
+        <RecruitmentSection onSecretPasswordReceived={handleSecretPasswordReceived} />
+
         <SecretSection
           isAuthorized={isSecretAuthorized}
           password={secretPassword}
@@ -304,6 +316,8 @@ const Index = () => {
           onPasswordChange={setSecretPassword}
           onAuthorize={handleSecretPasswordSubmit}
         />
+
+        <RanksSection />
 
         <div className="mb-8">
           <Button
