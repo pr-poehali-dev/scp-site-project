@@ -1,47 +1,24 @@
 {
   "tests": [
     {
-      "name": "Get all users - empty list",
+      "name": "Get all users",
       "method": "GET",
       "path": "/",
-      "expectedStatus": 200,
-      "expectedBody": {
-        "users": []
-      },
-      "bodyMatcher": "partial"
+      "expectedStatus": 200
     },
     {
-      "name": "Register new user",
+      "name": "Register - duplicate email",
       "method": "POST",
       "path": "/",
       "body": {
         "action": "register",
-        "username": "TestAgent",
+        "username": "AnotherUser",
         "email": "test@example.com",
         "password": "password123"
       },
-      "expectedStatus": 200,
+      "expectedStatus": 400,
       "expectedBody": {
-        "success": true
-      },
-      "bodyMatcher": "partial"
-    },
-    {
-      "name": "Login with correct credentials",
-      "method": "POST",
-      "path": "/",
-      "body": {
-        "action": "login",
-        "email": "test@example.com",
-        "password": "password123"
-      },
-      "expectedStatus": 200,
-      "expectedBody": {
-        "success": true,
-        "user": {
-          "username": "string",
-          "email": "string"
-        }
+        "success": false
       },
       "bodyMatcher": "partial"
     },

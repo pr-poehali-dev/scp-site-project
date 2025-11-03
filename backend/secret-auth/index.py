@@ -108,10 +108,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             password_hash = hash_password(password)
             cur.execute(
-                'INSERT INTO secret_users (username, email, password_hash) VALUES (%s, %s, %s)',
+                'INSERT INTO secret_users (username, email, password_hash) VALUES (%s, %s, %s) RETURNING id',
                 (username, email, password_hash)
             )
+            new_user_id = cur.fetchone()
             conn.commit()
+            
+            cur.execute(
+                'SELECT id, username, email, created_at FROM secret_users WHERE id = %s',
+                (new_user_id['id'],)
+            )
+            user_data = cur.fetchone()
+            
             cur.close()
             conn.close()
             
@@ -119,7 +127,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                 'isBase64Encoded': False,
-                'body': json.dumps({'success': True})
+                'body': json.dumps({'success': True, 'user': dict(user_data)}, default=str)
             }
         
         if action == 'login':
