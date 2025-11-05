@@ -12,6 +12,7 @@ import { SCPGrid } from '@/components/SCPGrid';
 import { SecretEasterEgg } from '@/components/SecretEasterEgg';
 import { RecruitmentSection } from '@/components/RecruitmentSection';
 import { RanksSection } from '@/components/RanksSection';
+import { SCPObjectSection } from '@/components/SCPObjectSection';
 import { scpDatabase } from '@/data/scpDatabase';
 
 interface Application {
@@ -318,6 +319,8 @@ const Index = () => {
         />
 
         <RanksSection />
+
+        <SCPObjectSection />
 
         <div className="mb-8">
           <Button
