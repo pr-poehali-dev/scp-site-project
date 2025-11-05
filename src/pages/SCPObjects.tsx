@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Input } from '@/components/ui/input';
+import { scpDatabase } from '@/data/scpDatabase';
 
 interface SCPObject {
   id: string;
@@ -10,11 +11,15 @@ interface SCPObject {
   class: string;
   containment: string;
   description: string;
-  observations: { id: string; text: string }[];
-  theories: string[];
+  anomalousProperties?: string[];
+  incidents?: { title: string; date: string; description: string }[];
+  notes?: string;
+  classified?: { title: string; content: string }[];
+  observations?: { id: string; text: string }[];
+  theories?: string[];
 }
 
-const SCP_OBJECTS: SCPObject[] = [
+const additionalSCPs: SCPObject[] = [
   {
     id: 'SCP-XXX',
     name: 'Полуночный Посетитель',
@@ -56,6 +61,18 @@ SCP-XXX появляется исключительно в многокварт�
     ]
   }
 ];
+
+const SCP_OBJECTS: SCPObject[] = [...scpDatabase.map(scp => ({
+  id: `SCP-${scp.id}`,
+  name: scp.name,
+  class: scp.class === 'Euclid' ? 'Евклид' : scp.class === 'Safe' ? 'Безопасный' : scp.class === 'Keter' ? 'Кетер' : scp.class,
+  containment: scp.containment,
+  description: scp.description,
+  anomalousProperties: scp.anomalousProperties,
+  incidents: scp.incidents,
+  notes: scp.notes,
+  classified: scp.classified
+})), ...additionalSCPs];
 
 const SCPObjects = () => {
   const [selectedSCP, setSelectedSCP] = useState<string | null>(null);
@@ -225,47 +242,139 @@ const SCPObjects = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-red-950/30 border-red-900">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-red-300">
-                      <Icon name="Eye" size={24} />
-                      Дополнение {scp.id.replace('SCP-', '')}-1: Записи наблюдений
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
-                      {scp.observations.map((obs, index) => (
-                        <div key={index} className="pl-4 border-l-2 border-red-800">
-                          <p className="text-red-300 text-sm font-mono mb-2 font-semibold">
-                            Протокол наблюдения {obs.id}:
-                          </p>
-                          <p className="text-red-100/80 leading-relaxed">{obs.text}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                {scp.anomalousProperties && scp.anomalousProperties.length > 0 && (
+                  <Card className="bg-red-950/30 border-red-900">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-red-300">
+                        <Icon name="Zap" size={24} />
+                        Аномальные свойства
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {scp.anomalousProperties.map((prop, index) => (
+                          <div key={index} className="flex items-start gap-3">
+                            <Icon name="Circle" size={8} className="text-red-400 mt-2 flex-shrink-0" />
+                            <p className="text-red-100/80 leading-relaxed">{prop}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
-                <Card className="bg-red-950/30 border-red-900">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-red-300">
-                      <Icon name="Lightbulb" size={24} />
-                      Дополнение {scp.id.replace('SCP-', '')}-2: Теории
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {scp.theories.map((theory, index) => (
-                        <p
-                          key={index}
-                          className="text-red-100/80 leading-relaxed pl-4 border-l-2 border-red-800"
-                        >
-                          {theory}
-                        </p>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                {scp.incidents && scp.incidents.length > 0 && (
+                  <Card className="bg-red-950/30 border-red-900">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-red-300">
+                        <Icon name="FileWarning" size={24} />
+                        Зафиксированные инциденты
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        {scp.incidents.map((incident, index) => (
+                          <div key={index} className="pl-4 border-l-2 border-red-800">
+                            <p className="text-red-300 text-sm font-semibold mb-1">
+                              {incident.title}
+                            </p>
+                            <p className="text-red-400/70 text-xs font-mono mb-2">
+                              {incident.date}
+                            </p>
+                            <p className="text-red-100/80 leading-relaxed">{incident.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {scp.observations && scp.observations.length > 0 && (
+                  <Card className="bg-red-950/30 border-red-900">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-red-300">
+                        <Icon name="Eye" size={24} />
+                        Дополнение {scp.id.replace('SCP-', '')}-1: Записи наблюдений
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        {scp.observations.map((obs, index) => (
+                          <div key={index} className="pl-4 border-l-2 border-red-800">
+                            <p className="text-red-300 text-sm font-mono mb-2 font-semibold">
+                              Протокол наблюдения {obs.id}:
+                            </p>
+                            <p className="text-red-100/80 leading-relaxed">{obs.text}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {scp.notes && (
+                  <Card className="bg-red-950/30 border-red-900">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-red-300">
+                        <Icon name="StickyNote" size={24} />
+                        Примечания
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-red-100/80 leading-relaxed whitespace-pre-line">
+                        {scp.notes}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {scp.theories && scp.theories.length > 0 && (
+                  <Card className="bg-red-950/30 border-red-900">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-red-300">
+                        <Icon name="Lightbulb" size={24} />
+                        Дополнение {scp.id.replace('SCP-', '')}-2: Теории
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {scp.theories.map((theory, index) => (
+                          <p
+                            key={index}
+                            className="text-red-100/80 leading-relaxed pl-4 border-l-2 border-red-800"
+                          >
+                            {theory}
+                          </p>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {scp.classified && scp.classified.length > 0 && (
+                  <Card className="bg-black/50 border-2 border-red-600">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-red-400">
+                        <Icon name="Lock" size={24} />
+                        ЗАСЕКРЕЧЕННАЯ ИНФОРМАЦИЯ - УРОВЕНЬ 4
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        {scp.classified.map((item, index) => (
+                          <div key={index} className="p-4 bg-red-950/40 border border-red-700 rounded">
+                            <p className="text-red-300 text-sm font-bold mb-3">
+                              {item.title}
+                            </p>
+                            <p className="text-red-100/80 leading-relaxed">
+                              {item.content}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 <div className="p-4 bg-red-950/40 border border-red-800 rounded-lg">
                   <div className="flex items-start gap-3">
