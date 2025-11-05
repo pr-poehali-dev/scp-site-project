@@ -12,7 +12,6 @@ import { SCPGrid } from '@/components/SCPGrid';
 import { SecretEasterEgg } from '@/components/SecretEasterEgg';
 import { RecruitmentSection } from '@/components/RecruitmentSection';
 import { RanksSection } from '@/components/RanksSection';
-import { SCPObjectSection } from '@/components/SCPObjectSection';
 import { scpDatabase } from '@/data/scpDatabase';
 
 interface Application {
@@ -264,6 +263,16 @@ const Index = () => {
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         <SCPHeader />
+        
+        <div className="mb-6 flex justify-center">
+          <a
+            href="/scp-objects"
+            className="px-6 py-2 bg-red-900 hover:bg-red-800 border border-red-700 text-red-100 rounded-lg transition-colors flex items-center gap-2"
+          >
+            <Icon name="FileWarning" size={20} />
+            База Данных SCP-Объектов
+          </a>
+        </div>
 
         {!hasSubmittedApplication ? (
           <div className="flex justify-center mb-4">
@@ -319,8 +328,6 @@ const Index = () => {
         />
 
         <RanksSection />
-
-        <SCPObjectSection />
 
         <div className="mb-8">
           <Button
